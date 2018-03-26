@@ -1,0 +1,17 @@
+{
+  "name": "Avocado Maker",
+  "version": "1.2.5.0",
+  "description": "Make your abocado with gambling, see your luck",
+  "permissions": ["storage"],
+  "optional_permissions": [
+    "topSites"
+  ],
+  "icons": {
+    "16": "images/icon_16.png",
+    "128": "images/icon_128.png"
+  },
+  "chrome_url_overrides": {
+    "newtab": "avocadee.html"
+  },
+  "manifest_version": 2
+}
