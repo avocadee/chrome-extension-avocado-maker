@@ -1,10 +1,51 @@
 .showroom {
-	width:400px;
+	width:600px;
 	height:400px;
+	border: 1px solid;
 }
 
 .center-diva
 {
 	margin: 0 auto;
 	width: 400px; 
+}
+
+
+.center {
+  position:absolute;
+  top:50%;
+  left:50%;
+  margin-top:-200px; /* this is half the height of your div*/  
+  margin-left:-300px; /*this is half of width of your div*/
+}
+
+.float_left {
+	float: left;
+}
+
+.float_right {
+	float: right;
+}
+
+.pop_unit {
+    width: 80px;
+    height: 80px;
+    background-repeat: no-repeat;
+    background-size: 100% auto;
+    background-position: center top;
+    display: block;
+    position: absolute;
+    cursor: pointer;
+}
+
+#game_start_btn {
+	cursor: pointer;
+}
+
+#score {
+	font-size: 20px;
+}
+
+.copyright {
+    margin-top: 500px;
 }

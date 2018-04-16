@@ -1,66 +1,122 @@
-window.setInterval(everyOneSecond, 1000);
+const DIFFICULTY_MAX = 4; // # n of icons
+const CONF_INTERVAL_INIT = 1300;
+const CONF_INTERVAL_MIN = 750;
+const CONF_INTERVAL_DECRESE = 80;
+const CONF_NEW_ICONS_RELEASE_LEVEL = 3;
 
-function everyOneSecond(){
-	var floatChanceFeeding = parseFloat(document.getElementById("chanceFeeding").innerHTML) + 0.1;
-	if( floatChanceFeeding > 100.0) {
-		document.getElementById("chanceFeeding").innerHTML = 100.0;
-	} else {
-		document.getElementById("chanceFeeding").innerHTML = floatChanceFeeding.toFixed(1);
-	}
-	var floatChanceHunting = parseFloat(document.getElementById("chanceHunting").innerHTML) - 0.01;
-	if( floatChanceHunting < 0.0) {
-		document.getElementById("chanceHunting").innerHTML = 0.0;
-	} else {
-		document.getElementById("chanceHunting").innerHTML = floatChanceHunting.toFixed(2);
-	}
+var gen_interval = CONF_INTERVAL_INIT;
+var unit_generator;
+
+toastr.options = {
+  "closeButton": false,
+  "debug": false,
+  "newestOnTop": false,
+  "progressBar": false,
+  "positionClass": "toast-bottom-center",
+  "preventDuplicates": false,
+  "onclick": null,
+  "showDuration": "100",
+  "hideDuration": "0",
+  "timeOut": "500",
+  "extendedTimeOut": "0",
+  "showEasing": "swing",
+  "hideEasing": "linear",
+  "showMethod": "slideDown",
+  "hideMethod": "fadeOut"
 }
 
-document.getElementById("btnFeeding").addEventListener("click", feeding);
-function feeding(){
-	if (getTFByChance(parseInt(document.getElementById("chanceFeeding").innerHTML))) {
-		document.getElementById("gram").innerHTML = parseInt(document.getElementById("gram").innerHTML) + 1;
-		document.getElementById("chanceFeeding").innerHTML = parseFloat(document.getElementById("chanceFeeding").innerHTML) - 1.0;
-		document.getElementById("chanceHunting").innerHTML = parseFloat(document.getElementById("chanceHunting").innerHTML) + 1.0;
-	} else {
-		document.getElementById("gram").innerHTML = 0;
-		document.getElementById("chanceFeeding").innerHTML = 100.0;
-	}
-}
+function unit_generate_fn() {
 
-document.getElementById("btnHunting").addEventListener("click", hunting);
-function hunting(){
-	if (getTFByChance(parseInt(document.getElementById("chanceHunting").innerHTML))) {
-		alert('got something');
-		// TO-DO
-	} else {
-		alert('failed');
-		// TO-DO
-		document.getElementById("gram").innerHTML = parseInt(document.getElementById("gram").innerHTML) / 2;
-	}
-}
+	var isOK = getTFByChance(80);
 
-function pulse() {
-	$('#avocado').animate({
-		width: 300, height: 300, // sets the base height and width
-		opacity: 0.5
-	}, 700, function() {
-		$('#avocado').animate({
-			width: 320, height: 320, // sets the alternative height and width
-			opacity: 1
-		}, 700, function() {
-			pulse();
+	var pTop = getRandomInt(320);
+	var pLeft = getRandomInt(520);
+	var difficulty = parseInt($('#score').text()) / CONF_NEW_ICONS_RELEASE_LEVEL;
+	console.log('difficulty:'+difficulty);
+	if (difficulty > DIFFICULTY_MAX) {
+		difficulty = DIFFICULTY_MAX;
+	}
+	var icon = isOK ? "images/avocado_" + getRandomInt(difficulty) + ".png" : "images/guacamole_" + getRandomInt(difficulty) + ".png";
+
+	var $mySpan = $("<span>", {
+		"class": "pop_unit",
+		"style": "top:" + pTop + "px;left:" + pLeft + "px;background-image: url(" + icon + ");"
+	});
+
+	$('#stage').append($mySpan);
+
+	var to = isOK ? setTimeout(function(){
+		$mySpan.remove();
+		if (parseInt($('#life').text()) <= 0 ){
+			game_end();
+			alert("Game Over . . .");
+		}
+		$('#life').text(parseInt($('#life').text()) - 1);
+		toastr.error('Lost life');
+	}, gen_interval) : null;
+
+	$mySpan.on( "click", { isOK : isOK, to: to }, function(event) {
+		var isOK = event.data.isOK;
+		var to = event.data.to;
+		if (isOK) {
+			$('#score').text(parseInt($('#score').text()) + 1);
+			toastr.success('+1');
+			gen_interval = gen_interval - CONF_INTERVAL_DECRESE;
+			if (gen_interval < CONF_INTERVAL_MIN) {
+				gen_interval = CONF_INTERVAL_MIN;
+			}
+			// TO-DO gain life
+			clearTimeout(to);
+		} else {
+			game_end();
+			alert("Game Over . . . score : " + $('#score').text());
+		}
+	});
+
+	$mySpan.animate({
+		width: 80, height: 80, // sets the base height and width
+		opacity: 1
+	}, 0, function() {
+		$mySpan.animate({
+			width: 80, height: 80,
+			//width: 60, height: 60, // sets the alternative height and width
+			//top: pTop + 10,
+			//left: pLeft + 10,
+			opacity: 0
+		}, gen_interval, function() {
+			$mySpan.remove();
 		});
-	}); 
-};
+	});
+}
 
-pulse();
+function unit_remove_fn(odv) {
+	odv.remove();
+}
+
+function game_start() {
+	$('#score').text(0);
+	$('#life').text(3);
+	unit_generator = setInterval(unit_generate_fn, gen_interval);
+}
+
+function game_end() {
+	clearInterval(unit_generator);
+}
+
+document.getElementById("game_start_btn").addEventListener("click", game_start);
+
+
+/* return int 0 to range -1 */
+function getRandomInt(range){
+	return Math.floor(Math.random() * range);
+}
 
 /**
  * percentage : should be 0.0 to 100.0
  * return true or false
  */
- function getTFByChance(percentage){
- 	var zeroToOne = Math.random();
- 	console.log('zeroToOne:'+zeroToOne);
- 	return (zeroToOne * 100 <= percentage) ? true : false;
- }
+function getTFByChance(percentage){
+	var zeroToOne = Math.random();
+	console.log('zeroToOne:'+zeroToOne);
+	return (zeroToOne * 100 <= percentage) ? true : false;
+}
